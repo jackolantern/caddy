@@ -1,0 +1,7 @@
+cairocffi==1.2.0
+cffi==1.14.5
+colour==0.1.5
+numpy==1.20.3
+pycparser==2.20
+Shapely==1.7.1
+TatSu==5.6.1

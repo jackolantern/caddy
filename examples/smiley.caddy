@@ -1,0 +1,9 @@
+let Smiley = function(size) {
+    let Eye = function(size) {
+        circle(size).remove(box(size, size).translate(V2(0, size)))
+    };
+    Eye(size / 2).translate(V2(-7, 4))
+};
+
+Smiley(7)
+

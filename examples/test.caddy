@@ -1,0 +1,33 @@
+import "prelude.caddy";
+
+let size = 16;
+let number_of_rays = 12;
+
+let Thin = function(shape) {
+    shape.style("stroke-width", 0.1)
+};
+
+let RayLeft = function(shape) {
+    shape.style("fill", color::from_rgb(1.0, 1.0, 0.0))
+};
+
+let RayRight = function(shape) {
+    shape.style("fill", color::from_rgb(1.0, 0.5, 0.0))
+};
+
+let Ball = function(shape) {
+    shape.style("fill", pattern::crosshatch(math::pi / 4, 0.2, color::from_name("white"), color::from_rgb(0.5, 1.0, 1.0)))
+};
+
+let make_sun = function(size, spokes) {
+    let rays = range(0, 2 * math::pi, math::pi / spokes).enumerate().map2(function(i, r) {
+        let h = if i % 2 == 1 then size / 2 else size;
+        let left = triangle::from_points(V2(0, 0), V2(0, -h), V2(1, 0)).RayLeft();
+        let right = triangle::from_points(V2(0, 0), V2(0, -h), V2(-1, 0)).RayRight();
+        [left, right].union().rotate(r).translate(V2(0, -size - size / 8))
+    });
+    rays.concat([circle(size).Ball()]).union().Thin().top(0.5)
+};
+
+make_sun(size, number_of_rays)
+

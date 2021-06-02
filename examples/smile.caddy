@@ -1,0 +1,39 @@
+import "prelude.caddy";
+
+let size = 8;
+
+let fill_red = function(shape) {
+    shape.style("fill", color::from_rgb(1, 0, 0))
+};
+
+let fill_yellow = function(shape) {
+    shape.style("fill", color::from_rgb(1, 1, 0))
+};
+
+let fill_black = function(shape) {
+    shape.style("fill", color::from_rgb(0, 0, 0))
+};
+
+let mkEye = function(shape, position) {
+  [
+    shape.remove(circle(size).top(0.85).translate(position)),
+    circle(size / 4)
+      .translate(V2(size / 2, -size / 2))
+      .translate(position)
+      .fill_black()
+  ].union()
+};
+
+let mkMouth = function(shape) {
+  let hole = circle(24).bottom(0.5);
+  let tounge = [hole, circle(12).translate(V2(8, 24))].intersection();
+  [
+    tounge.translate(V2(0, 4)).fill_red(),
+    shape.remove(hole.translate(V2(0, 4)))
+  ].disjoint_union()
+};
+
+circle(32).mkEye(V2(16, -12))
+          .mkEye(V2(-16, -12))
+          .mkMouth()
+          .fill_yellow()

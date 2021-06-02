@@ -1,0 +1,67 @@
+#!/usr/bin/env python3
+import os
+import sys
+import argparse
+
+import caddy
+import language
+from pretty import pprint
+
+def make_settings_blob(args):
+    return {
+        "grid": {
+            "size": args.grid_size,
+            "fine": args.grid_fine,
+            "position": args.grid_position
+        },
+        "display": {
+            "z": args.zoom,
+            "ppu": args.ppu
+        }
+    }
+
+def main(args):
+    shape = language.run_file(args.in_path)
+    if not shape:
+        sys.exit(-1)
+    if args.doprint:
+        pprint(shape)
+        sys.exit(0)
+
+    bounds = shape.bounds()
+    settings = make_settings_blob(args)
+    settings = caddy.Settings(settings)
+    draft = caddy.Draft(settings, shape)
+
+    width = 2 * int(bounds.width) * settings.display.ppu
+    height = 2 * int(bounds.height) * settings.display.ppu
+
+    context = draft.window(bounds.center, width, height)
+    surface = context.get_target()
+
+    if args.out_path:
+        out_path = args.out_path
+    else:
+        out_path = os.path.basename(args.in_path).split(".")[0] + ".png"
+    if out_path == '-':
+        surface.write_to_png(sys.stdout.buffer)
+        sys.stdout.flush()
+    else:
+        surface.write_to_png(out_path)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="caddy", usage="%(prog)s [options]")
+    parser.add_argument("in_path", type=str, metavar='PATH', help="The path to the caddy program to run.")
+
+    parser.add_argument("--grid-size", dest="grid_size", metavar="N", type=int, default=4, help="Overide the default grid size.")
+    parser.add_argument("--grid-fine", dest="grid_fine", metavar="N", type=int, default=1, help="Overide the default fine grid size.")
+    parser.add_argument("--grid-position", dest="grid_position", choices=('top', 'bottom', 'none'), default='top', help="Overide the default grid position.")
+
+    parser.add_argument("--ppu", dest="ppu", metavar="N", type=int, default=8, help="Pixels per unit.")
+    parser.add_argument("--zoom", dest="zoom", metavar="N", type=int, default=1, help="z position.")
+
+    parser.add_argument("-p", dest="doprint", action='store_true', help="Print the result instead of drawing.  Ignores the `out_path`.")
+    parser.add_argument("-o", nargs=1, dest="out_path", metavar='PATH', help="Path to write image.")
+    args = parser.parse_args()
+    main(args)
+

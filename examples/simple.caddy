@@ -1,0 +1,10 @@
+let r = 8;
+
+let Head = style {
+  fill: rgb(1, 1, 0);
+};
+
+let c2 = circle(r).translate(V2(-r, 12));
+
+circle(4*r)
+.remove(c2).Head()

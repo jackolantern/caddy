@@ -1,0 +1,129 @@
+@@grammar::CADDY
+@@keyword :: let in if else then function namespace import true false type this
+
+start = block_region $ ;
+
+block = '{' @:block_region '}' ;
+
+block_region = @+:{ statement } @:expression ;
+
+statement
+    = @:assignment ';'
+    | @:import_file ';'
+    ;
+
+assignment = 'let' name:identifier '=' value:expression ;
+import_file = 'import' path:string ;
+
+expression
+    = block
+    | function
+    | namespace
+    | if_then_else
+    | relational_expression
+    ;
+
+function
+    = 'function' '(' { parameters+:parameter { ',' parameters+:parameter } } ')' body:expression
+    ;
+
+parameter = name:identifier ;
+
+namespace = 'namespace' '{' { @+:definition } '}' ;
+
+definition = name:identifier '=' value:expression ';' ;
+
+relational_expression
+    = relational_binary_operation
+    | additive_expression
+    ;
+
+relational_binary_operation
+    = lhs:relational_expression op:'<' rhs:additive_expression
+    | lhs:relational_expression  op:'>'  rhs:additive_expression
+    | lhs:relational_expression  op:'<=' rhs:additive_expression
+    | lhs:relational_expression  op:'>=' rhs:additive_expression
+    | lhs:relational_expression  op:'==' rhs:additive_expression
+    ;
+
+additive_expression
+    = additive_binary_operation
+    | multiplicative_expression
+    ;
+
+additive_binary_operation
+    = lhs:additive_expression op:'+' rhs:multiplicative_expression
+    | lhs:additive_expression op:'-' rhs:multiplicative_expression
+    ;
+
+multiplicative_binary_operation
+    = lhs:multiplicative_expression op:'/' rhs:unary_expression
+    | lhs:multiplicative_expression op:'*' rhs:unary_expression
+    | lhs:multiplicative_expression op:'%' rhs:unary_expression
+    | lhs:multiplicative_expression op:'^' rhs:unary_expression
+    ;
+
+multiplicative_expression
+    = multiplicative_binary_operation
+    | unary_expression
+    ;
+
+unary_expression
+    = unary_operation
+    | postfix_expression
+    ;
+
+unary_operation
+    = op:'+' inner:unary_expression
+    | op:'-' inner:unary_expression
+    ;
+
+postfix_expression
+    = chain
+    | lookup
+    | index
+    | function_call
+    | primary_expression
+    ;
+
+primary_expression
+    = number
+    | bool
+    | variable
+    | string
+    | array
+    | '(' @:expression ')'
+    ;
+
+chain = first:postfix_expression '.' function:variable '(' { arguments:expression_list } ')' ;
+
+lookup = @:postfix_expression '::' @:variable ;
+
+variable = identifier | 'this' ;
+
+function_call = function:postfix_expression '(' arguments:expression_list ')' ;
+
+expression_list = { @+:expression { ',' @+:expression } } ;
+
+if_then_else = 'if' @:expression 'then' @:expression 'else' @:expression ;
+
+index = @:postfix_expression '[' @:expression ']' ;
+
+array = '[' @:expression_list ']' ;
+
+@name
+identifier = /(?!\d)\w+/ ;
+
+bool = 'true'
+     | 'false'
+     ;
+
+number = float
+       | integer
+       ;
+
+float = (/[0-9]+\.[0-9]*/ | /\.[0-9]+/);
+integer = /[0-9]+/ ;
+string = '"' @:{ STRING_ESCAPE_SEQ | /[^"]+/ }* '"' ;
+STRING_ESCAPE_SEQ = '\\' /\w|\S/ ;
+

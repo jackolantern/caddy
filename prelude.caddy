@@ -1,0 +1,108 @@
+namespace {
+    top = function(shape, amount) {
+        let b = shape.bounds();
+        let h = amount * b.height();
+        shape.remove(b.translate(V2(0, h)))
+    };
+
+    left = function(shape, amount) {
+        let b = shape.bounds().scale(V2(amount, 1));
+        let w = amount * b.width();
+        shape.remove(b.translate(V2(w, 0)))
+    };
+
+    right = function(shape, amount) {
+        let b = shape.bounds().scale(V2(amount, 1));
+        let w = amount * b.width();
+        shape.remove(b.translate(V2(-w, 0)))
+    };
+
+    bottom = function(shape, amount) {
+        let b = shape.bounds().scale(V2(1, amount));
+        let h = amount * b.height();
+        shape.remove(b.translate(V2(0, -h)))
+    };
+
+    list = namespace {
+        head = function(lst) {
+            lst[0]
+        };
+        tail = extern::tail;
+    };
+
+    vec = function(v) {
+        if v.len() == 2
+        then V2(v[0], v[1])
+        else if v.len() == 3
+             then V3(v[0], v[1], v[2])
+             else V2(0, 0)
+    };
+
+    foldr = function(f, acc, lst) {
+        let head = list::head(lst);
+        let rest = this(f, acc, list::tail(lst));
+
+        if lst == [] then acc else f(head, rest)
+    };
+
+    map = function(lst, f) {
+        let comp = function(item, rest) {
+            [f(item)] + rest
+        };
+        foldr(comp, [], lst)
+    };
+
+    map2 = function(lst, f) {
+        lst.map(function(v) {
+            f(v[0], v[1])
+        })
+    };
+
+    enumerate = function(lst) {
+        zip(range(0, len(lst), 1), lst)
+    };
+
+    diagonal = function(x) { [x, x] };
+
+    triangle = namespace {
+        iso = function(base, height) {
+            polygon([V2(-base/2, 0), V2(base/2, 0), V2(0, -height)])
+        };
+
+        from_points = function(p1, p2, p3) {
+            polygon([p1, p2, p3])
+        };
+    };
+
+    rounded = namespace {
+        triangle = namespace {
+            iso = function(radius, base, height) {
+                [
+                    circle(radius).translate(V2(-base/2, 0)),
+                    circle(radius).translate(V2(base/2, 0)),
+                    circle(radius).translate(V2(0, -height))
+                ].union().hull()
+            };
+        };
+
+        rectangle = function(radius, width, height) {
+            [
+                circle(radius).translate(V2(-width/2, -height/2)),
+                circle(radius).translate(V2(width/2, -height/2)),
+                circle(radius).translate(V2(-width/2, height/2)),
+                circle(radius).translate(V2(width/2, height/2))
+            ].union().hull()
+        };
+    };
+
+    color = namespace {
+        from_rgb = function(r, g, b) { extern::color_rgb(r, g, b) };
+        from_name = function(name) { extern::color_name(name) };
+    };
+
+    pattern = namespace {
+        hatch = function(angle, thickness, fg, bg) { extern::make_hatch(angle, thickness, fg, bg) };
+        crosshatch = function(angle, thickness, fg, bg) { extern::make_cross_hatch(angle, thickness, fg, bg) };
+    };
+}
+

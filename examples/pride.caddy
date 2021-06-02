@@ -1,0 +1,15 @@
+import "prelude.caddy";
+
+let width = 8;
+let height = 16;
+// This is cheating, but `color::from_name` will accept a string like "#rrggbb".
+let colors = [ "#FF0018", "#FFA52C", "#FFFF41", "#008018", "#0000F9", "#86007D" ];
+
+let fill = function(shape, name) {
+    shape.style("fill", color::from_name(name))
+};
+
+colors.enumerate().map2(function(index, color) {
+    box(width, height).fill(color).translate(V2(index * width, 0))
+}).union()
+
